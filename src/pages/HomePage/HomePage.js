@@ -4,6 +4,8 @@ import Header from "../../components/Header";
 import TaskItem from "../../components/TaskItem/TaskItem";
 import TaskModal from "../../components/TaskModal/TaskModal"; // Импортируем модальное окно
 import { saveTask, deleteTask, patchTask, getAllTasks } from '../../services/taskService';
+import { verifyToken } from "../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
     const [tasks, setTasks] = useState([]);
@@ -11,10 +13,19 @@ export default function HomePage() {
     const [newTask, setNewTask] = useState({ title: "", description: "", deadline: "" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     // При первой загрузке страницы загружаем задачи из localStorage и сервера
     useEffect(() => {
-        // Попробуем безопасно считать данные из localStorage
+        const checkToken = async () =>{
+            const response = await verifyToken();
+            if (!response.ok){
+                navigate("/authentication")
+                return;
+            }
+        }
+        checkToken();
+
         let savedTasks = [];
         try {
             const tasksFromStorage = localStorage.getItem('tasks');
@@ -43,7 +54,7 @@ export default function HomePage() {
         };
     
         fetchTasks();
-    }, []);
+    }, [navigate]);
     
     
 

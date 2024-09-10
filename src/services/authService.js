@@ -1,3 +1,4 @@
+
 const API_URL = 'http://localhost:8080/api/v1/auth'
 
 export const login = async (email, password) => {
@@ -23,7 +24,7 @@ export const login = async (email, password) => {
 
 
 
-export const loginUser = async (email, password) => {
+export const loginUser = async (email, password, navigate) => {
     try {
         const data = await login(email, password);
         
@@ -31,6 +32,7 @@ export const loginUser = async (email, password) => {
         localStorage.setItem('token', data.token);
         
         console.log('Login successful!');
+        navigate("/")
     } catch (error) {
         console.error('Error during login:', error.message);
     }
@@ -53,7 +55,7 @@ export const register = async (email, password) => {
     return response.json();
 }
 
-export const registerUser = async (email, password) => {
+export const registerUser = async (email, password, navigate) => {
     try {
         const data = await register(email, password);
         
@@ -61,7 +63,19 @@ export const registerUser = async (email, password) => {
         localStorage.setItem('token', data.token);
         
         console.log('Login successful!');
+        navigate("/")
     } catch (error) {
         console.error('Error during register:', error.message);
     }
 };
+
+export const verifyToken = async() => {
+    const response = await fetch(`${API_URL}/verify-token`, {
+
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+    });
+    return response
+}
