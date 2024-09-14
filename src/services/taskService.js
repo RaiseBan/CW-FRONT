@@ -46,9 +46,9 @@ export const saveTask = async (task) => {
     });
 
     const data = await response.json();
+    console.log(response.status)
     if (response.status === 201) {
         console.log(data);
-        console.log(data.completed);
         return data;
     } else {
         throw new Error(response.message || 'Failed while saving task');

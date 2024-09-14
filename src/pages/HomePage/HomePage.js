@@ -1,138 +1,111 @@
 import React, { useState, useEffect } from "react";
-import Button from "../../components/Button";
-import Header from "../../components/Header";
-import TaskItem from "../../components/TaskItem/TaskItem";
-import TaskModal from "../../components/TaskModal/TaskModal"; // Импортируем модальное окно
-import { saveTask, deleteTask, patchTask, getAllTasks } from '../../services/taskService';
-import { verifyToken } from "../../services/authService";
+import { Calendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { saveTask, getAllTasks } from '../../services/taskService';
+import TaskModal from '../../components/TaskModal/TaskModal';
+import styles from './HomePage.module.css';
 import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../services/authService"
+
+const localizer = momentLocalizer(moment);
 
 export default function HomePage() {
     const [tasks, setTasks] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [newTask, setNewTask] = useState({ title: "", description: "", deadline: "" });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [newTask, setNewTask] = useState({ title: "", start: "", end: "", color: "#ff0000" });
     const navigate = useNavigate();
 
-    // При первой загрузке страницы загружаем задачи из localStorage и сервера
     useEffect(() => {
-        const checkToken = async () =>{
+        const checkToken = async () => {
             const response = await verifyToken();
-            if (!response.ok){
-                navigate("/authentication")
+            if (!response.ok) {
+                navigate("/authentication");
                 return;
             }
-        }
+        };
         checkToken();
 
-        let savedTasks = [];
-        try {
-            const tasksFromStorage = localStorage.getItem('tasks');
-            if (tasksFromStorage) {
-                savedTasks = JSON.parse(tasksFromStorage);
-            }
-        } catch (error) {
-            console.error('Error parsing tasks from localStorage', error);
-            // Если ошибка, сбрасываем задачи на пустой массив
-            savedTasks = [];
-        }
-        setTasks(savedTasks);
-    
-        // Затем обновляем задачи с сервера
+        // Получаем задачи с бэкенда и форматируем для календаря
         const fetchTasks = async () => {
-            setLoading(true);
             try {
                 const fetchedTasks = await getAllTasks();
-                setTasks(fetchedTasks);
-                localStorage.setItem('tasks', JSON.stringify(fetchedTasks));
+                const formattedTasks = fetchedTasks.map(task => ({
+                    title: task.title,
+                    start: new Date(task.startTime),
+                    end: new Date(task.endTime),
+                    allDay: false,
+                    color: task.color
+                }));
+                setTasks(formattedTasks);
             } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
+                console.error("Error fetching tasks: ", error);
             }
         };
-    
         fetchTasks();
     }, [navigate]);
-    
-    
 
     const handleCreateTask = async () => {
-        setLoading(true);
         try {
-            const savedTask = await saveTask(newTask);
-            const updatedTasks = [...tasks, savedTask];
-            setTasks(updatedTasks);
-            localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+            await saveTask(newTask);
             setShowModal(false);
-            setNewTask({ title: "", description: "", deadline: "" });
+            setNewTask({ title: "", start: "", end: "", color: "#ff0000" });
+
+            // Обновляем список задач и форматируем их для календаря
+            const updatedTasks = await getAllTasks();
+            const formattedTasks = updatedTasks.map(task => ({
+                title: task.title,
+                start: new Date(task.startTime),
+                end: new Date(task.endTime),
+                allDay: false,
+                color: task.color
+            }));
+            setTasks(formattedTasks);
         } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
+            console.error("Error saving task: ", error);
         }
     };
 
-    const handleDeleteTask = async (id) => {
-        setLoading(true);
-        try {
-            await deleteTask(id);
-            const updatedTasks = tasks.filter((task) => task.id !== id);
-            setTasks(updatedTasks);
-            localStorage.setItem('tasks', JSON.stringify(updatedTasks));
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCompleteTask = async (id, updates) => {
-        setLoading(true);
-        try {
-            const updatedTask = await patchTask(id, updates);
-            const updatedTasks = tasks.map((task) => (task.id === id ? updatedTask : task));
-            setTasks(updatedTasks);
-            localStorage.setItem('tasks', JSON.stringify(updatedTasks));
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
+    const eventStyleGetter = (event) => {
+        const backgroundColor = event.color;
+        return {
+            style: {
+                backgroundColor,
+                borderRadius: '5px',
+                opacity: 0.8,
+                color: 'white',
+                border: '0px',
+                display: 'block'
+            }
+        };
     };
 
     return (
-        <div>
-            <Header />
-            <Button onClick={() => setShowModal(true)}>Create</Button>
+        <div className={styles.container}>
+            <h1 className={styles.header}>Task Scheduler</h1>
 
-            {/* Показ ошибок */}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            {/* Показ задач */}
-            <div>
-                {loading ? (
-                    <p>Loading tasks...</p>
-                ) : (
-                    tasks.map((task) => (
-                        <TaskItem
-                            key={task.id}
-                            task={task}
-                            onDelete={() => handleDeleteTask(task.id)}
-                            onComplete={() => handleCompleteTask(task.id, { completed: true })}
-                            onEdit={(updatedTask) => handleCompleteTask(task.id, updatedTask)}
-                        />
-                    ))
-                )}
+            {/* Календарь */}
+            <div className={styles.calendarContainer}>
+            <Calendar
+                localizer={localizer}
+                events={tasks}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: 800 }} // Устанавливаем общую высоту календаря
+                step={10} // Длительность временного интервала в минутах (например, 30 минут)
+                timeslots={3} // Количество временных интервалов в одном часе (например, 2 по 30 минут)
+                eventPropGetter={eventStyleGetter}
+            />
             </div>
+
+            <button className={styles.createTaskButton} onClick={() => setShowModal(true)}>+</button>
 
             {/* Модальное окно для создания задачи */}
             {showModal && (
                 <TaskModal
-                    newTask={newTask}
-                    setNewTask={setNewTask}
-                    handleCreateTask={handleCreateTask}
+                    task={newTask}
+                    setTask={setNewTask}
+                    handleSaveTask={handleCreateTask}
                     handleCloseModal={() => setShowModal(false)}
                 />
             )}

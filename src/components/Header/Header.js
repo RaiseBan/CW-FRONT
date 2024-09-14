@@ -1,5 +1,5 @@
-import logo from "../vite.svg"
-import Button from "./Button"
+import logo from "../../vite.svg"
+import Button from "../Button/Button"
 export default function Header(){
     function handleClick(message){
         alert(message)

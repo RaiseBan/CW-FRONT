@@ -27,11 +27,12 @@ export const login = async (email, password) => {
 export const loginUser = async (email, password, navigate) => {
     try {
         const data = await login(email, password);
-        
+        console.log(data.token);
         // Сохраняем JWT токен в localStorage
         localStorage.setItem('token', data.token);
         
         console.log('Login successful!');
+        
         navigate("/")
     } catch (error) {
         console.error('Error during login:', error.message);

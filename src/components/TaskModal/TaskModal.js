@@ -1,29 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './TaskModal.module.css';
-import Button from '../Button';
+import Button from '../Button/Button';
 
-const TaskModal = ({ newTask, setNewTask, handleCreateTask, handleCloseModal }) => {
+const TaskModal = ({ task, setTask, handleSaveTask, handleCloseModal }) => {
+    const [startTime, setStartTime] = useState(task.startTime || '');
+    const [endTime, setEndTime] = useState(task.endTime || '');
+    const [color, setColor] = useState(task.color || "#ff0000"); // Дефолтный цвет
+
+    // Обработка изменений времени и даты
+    const handleTimeChange = (start, end) => {
+        setTask({ ...task, startTime: start, endTime: end });
+    };
+
     return (
         <div className={styles.modal}>
-            <h2>Create Task</h2>
+            <h2>{task.id ? 'Edit Task' : 'Create Task'}</h2>
             <input
                 type="text"
                 placeholder="Title"
-                value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-            />
-            <textarea
-                placeholder="Description"
-                value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                value={task.title}
+                onChange={(e) => setTask({ ...task, title: e.target.value })}
             />
             <input
-                type="date"
-                value={newTask.deadline}
-                onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+                type="datetime-local"
+                placeholder="Start Time"
+                value={startTime}
+                onChange={(e) => {
+                    setStartTime(e.target.value);
+                    handleTimeChange(e.target.value, endTime);
+                }}
+            />
+            <input
+                type="datetime-local"
+                placeholder="End Time"
+                value={endTime}
+                onChange={(e) => {
+                    setEndTime(e.target.value);
+                    handleTimeChange(startTime, e.target.value);
+                }}
+            />
+            <label>Pick a color:</label>
+            <input
+                type="color"
+                value={color}
+                onChange={(e) => {
+                    setColor(e.target.value);
+                    setTask({ ...task, color: e.target.value });
+                }}
             />
             <div className={styles.buttonGroup}>
-                <Button onClick={handleCreateTask}>Done</Button>
+                <Button onClick={handleSaveTask}>Save</Button>
                 <Button onClick={handleCloseModal}>Cancel</Button>
             </div>
         </div>
