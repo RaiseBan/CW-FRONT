@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../api/auth";
+import {
+    Container,
+    TextField,
+    Button,
+    Typography,
+    Alert,
+    Box,
+} from "@mui/material";
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ username: "", password: "" });
@@ -23,31 +31,48 @@ const LoginPage = () => {
     };
 
     return (
-        <div>
-            <h1>Login</h1>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
+        <Container maxWidth="xs" sx={{ mt: 4 }}>
+            <Typography variant="h4" align="center" gutterBottom>
+                Login
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit}>
+                <TextField
+                    label="Username"
                     name="username"
-                    placeholder="Username"
                     value={formData.username}
                     onChange={handleChange}
+                    fullWidth
                     required
+                    margin="normal"
+                    variant="outlined"
                 />
-                <input
-                    type="password"
+                <TextField
+                    label="Password"
                     name="password"
-                    placeholder="Password"
-                    required
+                    type="password"
                     value={formData.password}
                     onChange={handleChange}
-                    autoComplete="current-password"
+                    fullWidth
+                    required
+                    margin="normal"
+                    variant="outlined"
                 />
-
-                <button type="submit">Login</button>
-            </form>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-        </div>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2 }}
+                >
+                    Login
+                </Button>
+            </Box>
+            {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                    {error}
+                </Alert>
+            )}
+        </Container>
     );
 };
 

@@ -15,7 +15,7 @@ const SearchMeals = () => {
             if (query.trim().length > 0) {
                 fetchMeals(query);
             }
-        }, 1000);
+        }, 100);
 
         return () => clearTimeout(timeout);
     }, [query]);

@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../api/auth";
+import {
+    Container,
+    TextField,
+    Button,
+    Typography,
+    Alert,
+    Box,
+} from "@mui/material";
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
@@ -9,7 +17,7 @@ const RegisterPage = () => {
         confirmPassword: "",
     });
     const [error, setError] = useState(null);
-    const navigate = useNavigate(); // Хук для навигации
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -29,50 +37,66 @@ const RegisterPage = () => {
                 username: formData.username,
                 password: formData.password,
             });
-            // Редирект на страницу логина после успешной регистрации
             navigate("/login");
-
         } catch (err) {
-            console.log(err)
             setError("Failed to register. Please try again.");
         }
     };
 
     return (
-        <div>
-            <h1>Register</h1>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
+        <Container maxWidth="xs" sx={{ mt: 4 }}>
+            <Typography variant="h4" align="center" gutterBottom>
+                Register
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit}>
+                <TextField
+                    label="Username"
                     name="username"
-                    placeholder="Username"
                     value={formData.username}
                     onChange={handleChange}
+                    fullWidth
                     required
-                    autoComplete="username"
+                    margin="normal"
+                    variant="outlined"
                 />
-                <input
-                    type="password"
+                <TextField
+                    label="Password"
                     name="password"
-                    placeholder="Password"
+                    type="password"
                     value={formData.password}
                     onChange={handleChange}
+                    fullWidth
                     required
-                    autoComplete="new-password"
+                    margin="normal"
+                    variant="outlined"
                 />
-                <input
-                    type="password"
+                <TextField
+                    label="Confirm Password"
                     name="confirmPassword"
-                    placeholder="Confirm Password"
+                    type="password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    fullWidth
                     required
-                    autoComplete="new-password"
+                    margin="normal"
+                    variant="outlined"
                 />
-                <button type="submit">Register</button>
-            </form>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-        </div>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2 }}
+                >
+                    Register
+                </Button>
+            </Box>
+            {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                    {error}
+                </Alert>
+            )}
+        </Container>
     );
 };
 

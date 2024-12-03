@@ -10,8 +10,9 @@ import {
     Box,
     Modal,
     TextField,
+    Snackbar,
+    Alert,
 } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InfoIcon from "@mui/icons-material/Info";
 
 const FavoritesPage = () => {
@@ -19,11 +20,11 @@ const FavoritesPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [hoveredDishId, setHoveredDishId] = useState(null);
-    const [addedDishIds, setAddedDishIds] = useState(new Set());
     const [imageUrls, setImageUrls] = useState({});
     const [openModal, setOpenModal] = useState(false);
     const [selectedDishId, setSelectedDishId] = useState(null);
     const [selectedDate, setSelectedDate] = useState("");
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     useEffect(() => {
         const fetchFavorites = async () => {
@@ -41,7 +42,6 @@ const FavoritesPage = () => {
                 const data = await response.json();
                 setFavorites(data);
 
-                // Загружаем изображения для всех блюд
                 for (const dish of data) {
                     fetchImage(dish.imageUrl, dish.id);
                 }
@@ -53,8 +53,6 @@ const FavoritesPage = () => {
         };
 
         fetchFavorites();
-
-        // Автоматическое обновление каждые 5 секунд
         const interval = setInterval(fetchFavorites, 5000);
         return () => clearInterval(interval);
     }, []);
@@ -100,7 +98,6 @@ const FavoritesPage = () => {
         }
 
         try {
-            // Преобразуем введенное время без миллисекунд
             const date = new Date(selectedDate);
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -108,7 +105,6 @@ const FavoritesPage = () => {
             const hours = String(date.getHours()).padStart(2, "0");
             const minutes = String(date.getMinutes()).padStart(2, "0");
             const seconds = String(date.getSeconds()).padStart(2, "0");
-
             const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
             const payload = {
@@ -129,19 +125,16 @@ const FavoritesPage = () => {
                 throw new Error(`Failed to add dish to calendar: ${response.status}`);
             }
 
-            setAddedDishIds((prev) => new Set(prev).add(selectedDishId));
+            setSnackbarOpen(true); // Показать всплывающий алерт
             setOpenModal(false);
-            alert("Dish added to calendar!");
         } catch (err) {
             console.error("Error adding dish to calendar:", err.message);
         }
     };
 
-
-
-
-
-
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
 
     if (isLoading) {
         return <CircularProgress style={{ display: "block", margin: "20px auto" }} />;
@@ -164,13 +157,9 @@ const FavoritesPage = () => {
                             onMouseLeave={() => setHoveredDishId(null)}
                             sx={{
                                 position: "relative",
-                                backgroundColor: addedDishIds.has(dish.id)
-                                    ? "rgba(76, 175, 80, 0.1)"
-                                    : hoveredDishId === dish.id
-                                        ? "rgba(0, 0, 0, 0.05)"
-                                        : "white",
-                                transition: "background-color 0.3s",
-                                boxShadow: addedDishIds.has(dish.id) ? "0px 0px 10px rgba(76, 175, 80, 0.5)" : "",
+                                transition: "transform 0.3s, box-shadow 0.3s",
+                                transform: hoveredDishId === dish.id ? "scale(0.95)" : "scale(1)", // Эффект сжатия
+                                boxShadow: hoveredDishId === dish.id ? "0px 4px 20px rgba(0, 0, 0, 0.2)" : "none",
                             }}
                         >
                             <CardMedia
@@ -188,34 +177,36 @@ const FavoritesPage = () => {
                                     {dish.instructions.slice(0, 100)}...
                                 </Typography>
                             </CardContent>
-                            <Box
-                                sx={{
-                                    position: "absolute",
-                                    bottom: 10,
-                                    left: "50%",
-                                    transform: "translateX(-50%)",
-                                    display: "flex",
-                                    gap: 1,
-                                }}
-                            >
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    size="small"
-                                    onClick={() => handleAdd(dish.id)}
+                            {hoveredDishId === dish.id && (
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        bottom: 10,
+                                        left: "50%",
+                                        transform: "translateX(-50%)",
+                                        display: "flex",
+                                        gap: 1,
+                                    }}
                                 >
-                                    Add
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    color="secondary"
-                                    size="small"
-                                    onClick={() => handleInfo(dish.name)}
-                                    startIcon={<InfoIcon />}
-                                >
-                                    Info
-                                </Button>
-                            </Box>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        size="small"
+                                        onClick={() => handleAdd(dish.id)}
+                                    >
+                                        Add
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        color="secondary"
+                                        size="small"
+                                        onClick={() => handleInfo(dish.name)}
+                                        startIcon={<InfoIcon />}
+                                    >
+                                        Info
+                                    </Button>
+                                </Box>
+                            )}
                         </Card>
                     </Grid>
                 ))}
@@ -261,6 +252,17 @@ const FavoritesPage = () => {
                     </Box>
                 </Box>
             </Modal>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            >
+                <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
+                    Success! Added to calendar.
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

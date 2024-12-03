@@ -8,6 +8,7 @@ import LoginPage from "./components/Auth/LoginPage";
 import RegisterPage from "./components/Auth/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MealPage from "./components/MealPage/MealPage"; // Новый компонент для отображения блюда
+import UserDish from "./components/UserDish/UserDish"; // Новый компонент для пользовательских блюд
 import styles from "./App.module.css";
 
 const App = () => (
@@ -27,6 +28,8 @@ const App = () => (
                 {/* Маршрут для отображения блюда */}
                 <Route path="/meal/:name" element={<MealPage />} />
 
+                {/* Новый маршрут для отображения пользовательских блюд */}
+                <Route path="/user-dish/:id" element={<ProtectedRoute><UserDish /></ProtectedRoute>} />
 
                 {/* Редирект на календарь для всех неизвестных маршрутов */}
                 <Route path="*" element={<Navigate to="/calendar" />} />
