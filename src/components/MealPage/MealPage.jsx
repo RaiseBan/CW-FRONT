@@ -21,6 +21,7 @@ const MealPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [imageSrc, setImageSrc] = useState(null);
+    const [buttonClicked, setButtonClicked] = useState(false); // Для отслеживания нажатия кнопки
 
     useEffect(() => {
         const fetchMeal = async () => {
@@ -105,8 +106,8 @@ const MealPage = () => {
             if (!response.ok) {
                 throw new Error(`Error: ${response.status}`);
             }
-
-            alert("Dish added to favorites!");
+            setButtonClicked(true); // Изменяем состояние кнопки на "нажата"
+            setTimeout(() => setButtonClicked(false), 1000); // Сбрасываем состояние через 1 секунду
         } catch (err) {
             console.error("Failed to add dish:", err.message);
             alert("Failed to add dish. Please try again.");
@@ -172,8 +173,15 @@ const MealPage = () => {
                     </List>
                 </CardContent>
                 <CardActions sx={{ justifyContent: "center" }}>
-                    <Button variant="contained" color="primary" onClick={handleAddToFavorites}>
-                        Add to Favorites
+                    <Button
+                        variant="contained"
+                        color={buttonClicked ? "success" : "primary"} // Изменение цвета кнопки на зеленый при нажатии
+                        onClick={handleAddToFavorites}
+                        sx={{
+                            transition: "background-color 0.3s ease", // Плавный переход цвета
+                        }}
+                    >
+                        {buttonClicked ? "Added!" : "Add to Favorites"}
                     </Button>
                 </CardActions>
             </Card>

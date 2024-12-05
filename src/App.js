@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom";
 import Header from "./components/Header/Header";
 import CalendarPage from "./components/Calendar/CalendarPage";
 import FavoritesPage from "./components/Favorites/FavoritesPage";
@@ -9,32 +9,28 @@ import RegisterPage from "./components/Auth/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MealPage from "./components/MealPage/MealPage"; // Новый компонент для отображения блюда
 import UserDish from "./components/UserDish/UserDish"; // Новый компонент для пользовательских блюд
-import styles from "./App.module.css";
 
 const App = () => (
     <Router>
-        <div className={styles.app}>
-            <Header />
-            <Routes>
-                {/* Защищённые маршруты */}
-                <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-                <Route path="/shopping-list" element={<ProtectedRoute><ShoppingListPage /></ProtectedRoute>} />
-                <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
+        <Header/>
+        <Routes>
+            <Route path="/" element={<LoginPage/>}/>
+            <Route path="/calendar" element={<CalendarPage/>}/>
+            <Route path="/shopping-list" element={<ShoppingListPage/>}/>
+            <Route path="/favorites" element={<FavoritesPage/>}/>
 
-                {/* Открытые маршруты */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+            {/* Открытые маршруты */}
+            <Route path="/login" element={<LoginPage/>}/>
+            <Route path="/register" element={<RegisterPage/>}/>
 
-                {/* Маршрут для отображения блюда */}
-                <Route path="/meal/:name" element={<MealPage />} />
+            {/* Маршрут для отображения блюда */}
+            <Route path="/meal/:name" element={<MealPage/>}/>
 
-                {/* Новый маршрут для отображения пользовательских блюд */}
-                <Route path="/user-dish/:id" element={<ProtectedRoute><UserDish /></ProtectedRoute>} />
+            {/* Новый маршрут для отображения пользовательских блюд */}
+            <Route path="/user-dish/:id" element={<UserDish/>}/>
 
-                {/* Редирект на календарь для всех неизвестных маршрутов */}
-                <Route path="*" element={<Navigate to="/calendar" />} />
-            </Routes>
-        </div>
+            <Route path="*" element={<Navigate to="/calendar"/>}/>
+        </Routes>
     </Router>
 );
 
